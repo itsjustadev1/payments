@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./app_logs:/app/app.log
+    command: ["python", "uvicorn_server.py"]
+    platform: linux/amd64
+    network_mode: "host"
+    restart: always
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${POSTGRES_DB}"
+    ports:
+      - "5430:5432"
+    restart: always

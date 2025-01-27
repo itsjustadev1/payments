@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  transaction:
+    image: itsjustadev/sambanking:outgoing
+    volumes:
+      - ./app_logs:/app/app.log
+    command: ["python", "uvicorn_transaction.py"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    restart: always
+    ports:
+      - "8888:8888" # порт 8888 для доступа извне
+    networks:
+      - shared_network
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${POSTGRES_DB}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+    expose:
+      - "5432" # Открываем порт только для внутренней сети
+    networks:
+      - shared_network
+
+volumes:
+  postgres_data:
+
+networks:
+  shared_network:
+    driver: bridge

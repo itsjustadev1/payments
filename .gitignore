@@ -1,0 +1,13 @@
+.env
+.envl
+.envs
+app.txt
+*.p12
+*.pub
+*.pem
+*.p7s
+*init__.py
+*pycache__
+.DS_Store
+**/certs_alfa/
+**/__pycache__/
