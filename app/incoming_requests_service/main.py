@@ -5,13 +5,13 @@ import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Header, APIRouter, Query
 from fastapi.responses import Response, JSONResponse
-from decimals import *
 from schemas.pydantic_models import *
 from schemas.sql_entities import *
 from repositories.db_payments.sql_functions import *
 from schemas.request_entities import *
 from app_logs.loggers import *
-from time_checker import *
+from utils.time_checker import *
+from utils.decimals import *
 
 
 prefix = "/service/v1"
