@@ -1,6 +1,6 @@
 import asyncio
 import decimal
-from db_payments.sql_entities import *
+from schemas.sql_entities import *
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.future import select

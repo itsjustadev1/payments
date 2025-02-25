@@ -1,7 +1,7 @@
 import subprocess
 from base64 import b64encode
 from typing import List
-from card_encryption import encrypt_card
+from service.card_encryption import encrypt_card
 import os
 
 username = os.environ.get("USER") or os.environ.get("USERNAME")

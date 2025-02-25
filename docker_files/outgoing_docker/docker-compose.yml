@@ -1,20 +1,20 @@
 version: "3.8"
 
 services:
-  fastapi:
-    image: # PASTE AN INCOMING IMAGE
+  transaction:
+    image: # PASTE AN OUTGOING IMAGE HERE
     volumes:
       - ./app_logs:/app/app.log
-    command: ["python", "uvicorn_server.py"]
+    command: ["python", "main.py"]
     build:
       context: .
       dockerfile: Dockerfile
     platform: linux/amd64
     restart: always
     ports:
-      - "8080:8080" # порт 8080 для доступа извне
+      - "8888:8888" # порт 8888 для доступа извне
     networks:
-      - internal_network
+      - shared_network
 
   postgres:
     image: postgres:latest
@@ -28,11 +28,11 @@ services:
     expose:
       - "5432" # Открываем порт только для внутренней сети
     networks:
-      - internal_network
+      - shared_network
 
 volumes:
   postgres_data:
 
 networks:
-  internal_network:
+  shared_network:
     driver: bridge

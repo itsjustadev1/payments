@@ -2,8 +2,8 @@ import os
 from dotenv import load_dotenv
 from urllib.parse import quote
 from datetime import datetime
-from db_transactions.token_functions import get_access_token, get_refresh_token, insert_or_update_token
-from db_transactions.sql_functions import *
+from repositories.db_transactions.token_functions import get_access_token, get_refresh_token, insert_or_update_token
+from repositories.db_transactions.sql_functions import *
 import httpx
 import ssl
 # from requests_pkcs12 import get, post
