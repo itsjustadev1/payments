@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+sqlalchemy[asyncio]
+asyncpg
+python-dotenv
+python-dateutil
+pycryptodome
+httpx
