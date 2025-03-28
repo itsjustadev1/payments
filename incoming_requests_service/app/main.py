@@ -1,6 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
-from service import *
+from routes import *
 
 
 app = FastAPI(docs_url=prefix+"/docs", openapi_url=prefix+"/openapi.json")
