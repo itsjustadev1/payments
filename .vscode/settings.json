@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "./incoming_requests_service/app"
+    ]
+}
