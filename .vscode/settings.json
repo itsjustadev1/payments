@@ -1,6 +1,0 @@
-{
-    "python.analysis.extraPaths": [
-        "./incoming_requests_service/app",
-        "./outgoing_requests_service/app"
-    ]
-}
