@@ -1,6 +1,7 @@
 .env
 .envl
 .envs
+example.env
 app.txt
 *.p12
 *.pub
