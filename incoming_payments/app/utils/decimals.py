@@ -1,8 +1,61 @@
-from decimal import Decimal
-from typing import List
+from decimal import Decimal, ROUND_HALF_UP
+from typing import List, Tuple
+from datetime import datetime
+from collections import defaultdict
 
 
-# получаем сумму на счету по инн
+def calculate_sums(data) -> Tuple[Decimal, Decimal]:
+    """
+    Функция для расчёта суммы за текущий и предыдущий месяц
+    """
+
+    current_date = datetime.now()
+    current_month = current_date.month
+    current_year = current_date.year
+
+    if current_month == 1:
+        previous_month = 12
+        previous_year = current_year - 1
+    else:
+        previous_month = current_month - 1
+        previous_year = current_year
+
+    current_month_sum = Decimal(0)
+    previous_month_sum = Decimal(0)
+
+    for entry in data:
+        event_time = datetime.fromisoformat(
+            entry["event_time"].replace("Z", "+00:00"))
+        amount = Decimal(entry["amount_rub"])
+
+        if event_time.year == current_year and event_time.month == current_month:
+            current_month_sum += amount
+        elif event_time.year == previous_year and event_time.month == previous_month:
+            previous_month_sum += amount
+
+    return current_month_sum, previous_month_sum
+
+
+def calculate_month_sums(data):
+    """
+    Функция для расчёта сумм по месяцам
+    """
+
+    monthly_totals = defaultdict(Decimal)
+    current_year = datetime.now().year
+
+    for item in data:
+        event_time = datetime.fromisoformat(item['event_time'])
+        if event_time.year == current_year:
+            month = event_time.month
+            monthly_totals[month] += Decimal(item['amount_rub'])
+            
+    result = sorted(
+        [{"month": str(month), "amount_rub": str(total)}
+         for month, total in monthly_totals.items()],
+        key=lambda x: x["month"]
+    )
+    return result
 
 
 def convert_to_decimal(number: float | str | Decimal) -> Decimal:
@@ -79,6 +132,3 @@ def check_balance_is_enough(balance: str, number: float | str | Decimal) -> bool
     decimal_number = convert_to_decimal(number)
     return True if decimal_balance > decimal_number else False
 
-
-# add_to_balance(number)
-# decimal_number = Decimal(str(number))

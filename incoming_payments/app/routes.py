@@ -48,7 +48,6 @@ async def get_history_payments(inn: str = Query(..., description="ИНН ком�
         if not result:
             return JSONResponse(status_code=404, content=HistoryPaymentsResponseModel().model_dump())
         if isinstance(result, list):
-            # фильтрация либо по полгода либо по году
             time_distance = six_months_ago if not full_year else one_year_ago
             results_list = [{k: v for k, v in entry.items() if k != "inn"}
                             for entry in result if convert_to_datetime(entry["event_time"]) >= time_distance]
@@ -56,10 +55,8 @@ async def get_history_payments(inn: str = Query(..., description="ИНН ком�
                 results_list)
             all_month_sums = calculate_month_sums(results_list)
             result = HistoryPaymentsResponseModel(
-                # процент зачислений текущий/прошлый месяц
                 last_percent=(current_month_sum / previous_month_sum).quantize(Decimal(
                     '0.01'), rounding=ROUND_HALF_UP) if previous_month_sum else Decimal('1.00'),
-                # общая сумма зачислений в этом месяце
                 last_price=current_month_sum,
                 data=results_list,
                 months=all_month_sums

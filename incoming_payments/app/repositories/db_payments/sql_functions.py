@@ -17,12 +17,9 @@ password = str(os.getenv('POSTGRES_PASSWORD'))
 host = str(os.getenv('HOST'))
 port = str(os.getenv('PORT'))
 database = str(os.getenv('POSTGRES_DB'))
-# engine = create_async_engine(connection_string)
-# Асинхронный движок для подключения к PostgreSQL
 DATABASE_URL = f'postgresql+asyncpg://{username}:{password}@{host}:{port}/{database}'
 async_engine = create_async_engine(DATABASE_URL, echo=True)
 
-# Правильная инициализация фабрики асинхронных сессий с использованием sessionmaker
 AsyncSessionLocal = async_sessionmaker(
     async_engine, class_=AsyncSession, expire_on_commit=False)
 
@@ -34,12 +31,10 @@ async def insert_record(AsyncSessionLocal, model_class, **kwargs):
     :param kwargs: Параметры для полей таблицы
     """
     try:
-        async with AsyncSessionLocal() as session:  # Открываем сессию
-            async with session.begin():  # Открываем транзакцию
-                # Создаем объект модели с переданными аргументами
+        async with AsyncSessionLocal() as session:
+            async with session.begin():
                 new_record = model_class(**kwargs)
-                session.add(new_record)  # Добавляем запись в сессию
-            # Коммит выполнится автоматически по завершению контекста session.begin()
+                session.add(new_record)
 
         print(f"Новая запись добавлена в таблицу {model_class.__tablename__}")
         return True
@@ -49,10 +44,8 @@ async def insert_record(AsyncSessionLocal, model_class, **kwargs):
 
 
 async def create_all_tables(logger):
-    # logger.info("Начинаем создание таблиц...")
     try:
         async with async_engine.begin() as conn:
-            # logger.info("Подключение к базе данных установлено.")
             await conn.run_sync(Base.metadata.create_all)
             logger.info("Таблицы успешно созданы.")
     except Exception as e:
@@ -60,16 +53,13 @@ async def create_all_tables(logger):
 
 
 async def drop_all_tables(logger):
-    # logger.info("Начинаем создание таблиц...")
     try:
         async with async_engine.begin() as conn:
-            # logger.info("Подключение к базе данных установлено.")
             await conn.run_sync(Base.metadata.drop_all)
             logger.info("Таблицы успешно удалены.")
     except Exception as e:
         logger.error("Ошибка при создании таблиц: %s", e)
 
-# Универсальная асинхронная функция для добавления записи в любую таблицу
 
 
 async def select_records(AsyncSessionLocal, model_class, **filter_kwargs):
@@ -81,15 +71,13 @@ async def select_records(AsyncSessionLocal, model_class, **filter_kwargs):
     :return: Список найденных записей
     """
     try:
-        async with AsyncSessionLocal() as session:  # Открываем сессию
-            async with session.begin():  # Открываем транзакцию
-                # Строим запрос с фильтром
+        async with AsyncSessionLocal() as session:
+            async with session.begin():
                 query = select(model_class)
                 if filter_kwargs:
-                    # Применяем фильтр, если передан
                     query = query.filter_by(**filter_kwargs)
-                result = await session.execute(query)  # Выполняем запрос
-                records = result.scalars().all()  # Получаем список объектов
+                result = await session.execute(query)
+                records = result.scalars().all()
         print(
             f"Найдено {len(records)} записей в таблице {model_class.__tablename__}")
         return records
@@ -111,7 +99,6 @@ async def insert_payment(AsyncSessionLocal, model_class, unique_field: str, **kw
     async with AsyncSessionLocal() as session:
         try:
             async with session.begin():
-                # Проверяем, существует ли запись с указанным значением уникального поля
                 if unique_value is not None:
                     query = select(model_class).filter(
                         getattr(model_class, unique_field) == unique_value
@@ -123,7 +110,6 @@ async def insert_payment(AsyncSessionLocal, model_class, unique_field: str, **kw
                         print(
                             f"Запись с {unique_field}={unique_value} уже существует. Вставка не требуется.")
                     else:
-                        # Создаем и добавляем новую запись, если дубликатов нет
                         new_record = model_class(**kwargs)
                         session.add(new_record)
                         print(
@@ -137,13 +123,11 @@ async def insert_payment(AsyncSessionLocal, model_class, unique_field: str, **kw
 
 async def delete_one_record(AsyncSessionLocal, model_class, **filters):
     try:
-        async with AsyncSessionLocal() as session:  # Открываем сессию
-            async with session.begin():  # Открываем транзакцию
-                # Выполняем запрос на выбор первой записи, соответствующей фильтрам
+        async with AsyncSessionLocal() as session:
+            async with session.begin():
                 query = select(model_class).filter_by(**filters).limit(1)
                 result = await session.execute(query)
                 first_record = result.scalars().first()
-                # Если запись найдена, удаляем её
                 if first_record:
                     await session.delete(first_record)
                     await session.commit()
@@ -162,15 +146,12 @@ async def upsert_balance(AsyncSessionLocal, amount_rub: str | float | decimal.De
     try:
         async with AsyncSessionLocal() as session:
             async with session.begin():
-                # Проверяем, есть ли уже запись с данным ИНН
                 query = await session.execute(select(Balance).filter_by(client_inn=inn))
                 record = query.scalars().first()
 
                 if record:
-                    # Если запись существует, обновляем её баланс
                     record.balance = add_to_balance(record.balance, amount_rub)
                 else:
-                    # Если записи нет, создаём новую
                     new_record = Balance(
                         client_inn=inn, balance=amount_rub, client_info=company_name)
                     session.add(new_record)
@@ -182,11 +163,9 @@ async def reducing_balance(AsyncSessionLocal, amount_rub: str | float | decimal.
     try:
         async with AsyncSessionLocal() as session:
             async with session.begin():
-                # Проверяем, есть ли уже запись с данным ИНН
                 query = await session.execute(select(Balance).filter_by(client_inn=inn))
                 record = query.scalars().first()
                 if record:
-                    # Если запись существует, обновляем её баланс
                     record.balance = reduce_balance(record.balance, amount_rub)
                     return True
     except Exception as e:
@@ -197,15 +176,12 @@ async def select_balance(AsyncSessionLocal, inn: str):
     returning_value = None
     try:
         async with AsyncSessionLocal() as session:
-            # Проверяем, есть ли уже запись с данным ИНН
             query = await session.execute(select(Balance).filter_by(client_inn=inn))
             record = query.scalars().first()
 
             if record:
-                # Если запись существует, возвращаем её баланс
                 returning_value = record.balance
             else:
-                # Если записи нет
                 print('Выбрать баланс не удалось')
     except Exception as e:
         print(str(e))
@@ -222,36 +198,21 @@ async def hard_upsert_balance(AsyncSessionLocal, amount_rub: str, model_class: B
     :param kwargs: Параметры для полей таблицы
     """
     try:
-        async with AsyncSessionLocal() as session:  # Открываем сессию
-            async with session.begin():  # Открываем транзакцию
-                # Ищем запись по фильтру
+        async with AsyncSessionLocal() as session:
+            async with session.begin():
                 query = await session.execute(
                     select(model_class).filter_by(**filter_by)
                 )
                 record = query.scalars().first()
 
                 if record:
-                    # Обновляем найденную запись
                     record.balance = add_to_balance(record.balance, amount_rub)
                     print(
                         f"Баланс компании {filter_by} обновлен в таблице {model_class.__tablename__}")
                 else:
-                    # Создаем новую запись, если не найдена
                     new_record = model_class(**kwargs)
                     session.add(new_record)
                     print(
                         f"Новая комания и ее баланс добавлен в таблицу {model_class.__tablename__}")
-            # Коммит выполнится автоматически по завершению контекста session.begin()
     except Exception as e:
         print(f"Произошла ошибка: {e}")
-
-
-# async def main():
-#     balance = await select_balance(AsyncSessionLocal, '0140237176')
-#     print(balance)
-#     # await upsert_record(AsyncSessionLocal, Balance, filter_by={'client_inn': '1221'}, client_inn='1221', client_info='You', balance='1220.5')
-#     # await delete_one_record(AsyncSessionLocal, Balance, client_inn='1221')
-#     # await create_all_tables()
-# #     await insert_record(AsyncSessionLocal, Operation, user_info="User1234", sign="SomeSign", amount="1000", status="pending")
-
-# asyncio.run(main())

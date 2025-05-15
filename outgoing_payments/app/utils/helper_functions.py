@@ -6,7 +6,6 @@ from repositories.db_transactions.token_functions import get_access_token, get_r
 from repositories.db_transactions.sql_functions import *
 import httpx
 import ssl
-# from requests_pkcs12 import get, post
 
 load_dotenv()
 CLIENT_ID = str(os.getenv('CLIENT_ID'))
@@ -21,7 +20,6 @@ REDIRECT_URI = 'http://localhost'
 
 class Headers:
     def __init__(self, **kwargs):
-        # Преобразуем ключи в заглавные буквы
         self.data = {key.replace('_', '-').capitalize()                     : value for key, value in kwargs.items()}
 
     def get_headers(self) -> dict:
@@ -44,18 +42,14 @@ async def handle_token_response(response, AsyncSessionLocal, model_class):
     :return: None
     """
     try:
-        # Парсим ответ, предполагая, что response.text содержит JSON
         token_data = response.json()
-
-        # Извлекаем токены
         access_token = token_data.get('access_token')
         refresh_token = token_data.get('refresh_token')
 
         if not access_token or not refresh_token:
             raise ValueError(
                 "Missing access_token or refresh_token in response")
-
-        # Обновляем запись в таблице Token
+            
         await insert_or_update_token(AsyncSessionLocal, model_class,
                                      access_token=access_token,
                                      refresh_token=refresh_token,
@@ -66,16 +60,13 @@ async def handle_token_response(response, AsyncSessionLocal, model_class):
         print(f"Произошла ошибка: {e}")
 
 
-# Включение отладки SSL
 ssl_context = ssl.create_default_context(
     cafile='certs_alfa/russiantrustedca.pem')
 ssl_context.load_cert_chain(
     certfile='certs_alfa/sandbox_cert_2025.cer',
     keyfile='certs_alfa/sandbox_key_2025_unencrypted.key'
 )
-ssl_context.set_ciphers('ALL')  # Включение всех доступных шифров
-
-# Используйте этот контекст в HTTPX
+ssl_context.set_ciphers('ALL')
 
 
 async def make_nocert_async_request(post_or_get: str, url, headers, data=None):
@@ -215,14 +206,3 @@ async def get_transaction_info():
     if response:
         print(response.text)
         print(response.status_code)
-
-
-async def main():
-    pass
-    # await create_tables()         # Создание таблиц
-    # await update_token()          # Обновление токена
-    # await get_transaction_info()  # Получение информации о транзакциях
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

@@ -1,6 +1,5 @@
 import uuid
 
-# Генерация уникального идентификатора
 external_id = str(uuid.uuid4())
 payout_id = str(uuid.uuid4())
 

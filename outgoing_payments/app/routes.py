@@ -17,7 +17,6 @@ from app_logs.logger import *
 
 
 load_dotenv()
-# адрес для вызова вебхука о пополнении в альфа
 WEBHOOK_SERVER = os.getenv('WEBHOOK_SERVER')
 PAYOUT_INFO_SERVER = str(os.getenv('PAYOUT_INFO_SERVER'))
 TOKEN = os.getenv('TOKEN')
@@ -115,19 +114,15 @@ async def make_main_transaction(items: Transactions, authorization: Optional[str
         header = Headers(authorization=f'Bearer {access_token}', content_type='application/json',
                          accept='application/json')
         header1 = Headers(authorization=f'Bearer {TOKEN}')
-        # проверить баланс, то что он больше чем списание
         response = await make_nocert_async_request('get', f'{SERVER}/balance?inn={items.inn}', header1.get_headers())
         if response and response.status_code == 200:
             data = response.json()
             balance = data.get("balance")
             print(f'\nБаланс компании: {balance}')
-
-        # функция сравнения баланса
             amounts = get_amounts_list(items.transactions)
             summed_amount = sum_amount(amounts)
             print(f'\nОбщая сумма списания: {summed_amount}')
             if check_balance_is_enough(balance, summed_amount):
-                # если больше то все ок и делаем транзакцию
                 response_text = await do_transaction(our_account_number, header, items, summed_amount)
                 if response_text == 'no_connection':
                     return JSONResponse(status_code=500, content={"transaction": "partial_success", "cause": "Транзакция совершена, но счет компании не обновлен"})

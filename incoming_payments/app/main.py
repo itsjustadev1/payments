@@ -7,10 +7,8 @@ app = FastAPI(docs_url=prefix+"/docs", openapi_url=prefix+"/openapi.json")
 
 
 async def initialize_and_start_server():
-    # Удаляем и создаём таблицы
     await drop_all_tables(logger)
     await create_all_tables(logger)
-    # Запускаем сервер Uvicorn
     config = uvicorn.Config(app, host="0.0.0.0", port=8080)
     server = uvicorn.Server(config)
     await server.serve()
